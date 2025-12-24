@@ -11,14 +11,22 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable());
+        http
+            .csrf(csrf -> csrf.disable())
 
-        http.authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> auth
+                // GET مفتوح لأي حد
                 .requestMatchers("/api/catalog/items").permitAll()
-                .anyRequest().authenticated()
-        );
 
-        http.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+                // POST محتاج ROLE
+                .requestMatchers("/api/catalog/items").hasRole("CATALOG_ADMIN")
+
+                // أي حاجة تانية لازم Login
+                .anyRequest().authenticated()
+            )
+
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+
         return http.build();
     }
 }
